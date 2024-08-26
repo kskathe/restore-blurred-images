@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deblur Image</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        async function predictImage() {
+            const fileInput = document.getElementById('file-input');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            // Display the input image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('input-image').src = e.target.result;
+                document.getElementById('input-image-container').style.display = 'block';
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+
+            // Send the file to the server
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            });
+
+            // Check if the request was successful
+            if (response.ok) {
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+
+                // Display the output image
+                document.getElementById('output-image').src = imageUrl;
+                document.getElementById('output-image-container').style.display = 'block';
+            } else {
+                alert('Error: Could not deblur the image.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Deblur Image</h1>
+        <form id="upload-form">
+            <input type="file" id="file-input" accept="image/*" required>
+            <button type="button" onclick="predictImage()">Predict</button>
+        </form>
+
+        <div id="input-image-container" style="display:none;">
+            <h2>Input Image:</h2>
+            <img id="input-image" src="" alt="Input Image">
+        </div>
+
+        <div id="output-image-container" style="display:none;">
+            <h2>Deblurred Image:</h2>
+            <img id="output-image" src="" alt="Deblurred Image">
+        </div>
+    </div>
+</body>
+</html>
